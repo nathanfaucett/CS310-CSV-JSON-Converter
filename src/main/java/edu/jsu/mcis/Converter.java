@@ -122,7 +122,8 @@ public class Converter {
             return false;
         }
     }
-    public static boolean jsonEqaul(Object a, Object b) {
+
+    private static boolean jsonEqaul(Object a, Object b) {
         if (a instanceof JSONObject && b instanceof JSONObject) {
             return jsonObjectEqaul((JSONObject) a, (JSONObject) b);
         } else if (a instanceof JSONArray && b instanceof JSONArray) {
@@ -131,7 +132,7 @@ public class Converter {
             return a.equals(b);
         }
     }
-    public static boolean jsonObjectEqaul(JSONObject a, JSONObject b) {
+    private static boolean jsonObjectEqaul(JSONObject a, JSONObject b) {
         for (Object k : a.keySet()) {
             String key = (String) k;
 
@@ -141,7 +142,7 @@ public class Converter {
         }
         return true;
     }
-    public static boolean jsonArrayEqaul(JSONArray a, JSONArray b) {
+    private static boolean jsonArrayEqaul(JSONArray a, JSONArray b) {
         int aSize = a.size();
 
         if (aSize != b.size()) {
