@@ -39,32 +39,42 @@ public class Converter {
 
     @SuppressWarnings("unchecked")
     public static String csvToJson(String csvString) {
+        JSONObject json = new JSONObject();
+
+        JSONArray colHeaders = new JSONArray();
+        colHeaders.add("Total");
+        colHeaders.add("Assignment 1");
+        colHeaders.add("Assignment 2");
+        colHeaders.add("Exam 1");
+        json.put("colHeaders", colHeaders);
+
+        JSONArray rowHeaders = new JSONArray();
+        json.put("rowHeaders", rowHeaders);
+
+        JSONArray data = new JSONArray();
+        json.put("data", data);
+
+        CSVParser parser = new CSVParser();
+        BufferedReader bufReader = new BufferedReader(new StringReader(csvString));
+
         try {
-            JSONObject json = new JSONObject();
+            String line = bufReader.readLine(); //skip header
 
-            JSONArray colHeaders = JSONArray();
-            colHeaders.add("Total","Assignment 1","Assignment 2","Exam 1");
-            json.set("colHeaders", colHeaders);
-
-            JSONArray rowHeaders = JSONArray();
-            json.set("rowHeaders", rowHeaders);
-
-            JSONArray data = JSONArray();
-            json.set("data", data);
-
-            CSVParser parser = CSVParser.parse(csvString);
-            for (CSVRecord record : parser) {
-                rowHeaders.add(record.get(0));
-                data.add(record.get(1));
-                data.add(record.get(2));
-                data.add(record.get(3));
-                data.add(record.get(4));
+            while ((line = bufReader.readLine()) != null ) {
+                String[] record = parser.parseLine(line);
+                rowHeaders.add(record[0]);
+                JSONArray row = new JSONArray();
+                row.add(new Long(record[1]));
+                row.add(new Long(record[2]));
+                row.add(new Long(record[3]));
+                row.add(new Long(record[4]));
+                data.add(row);
             }
-
-            return json.toString();
-        } catch (Exception e) {
-            return "";
+        } catch(IOException ex) {
+            ex.printStackTrace();
         }
+
+        return json.toString();
     }
 
     public static String jsonToCsv(String jsonString) {
@@ -77,7 +87,7 @@ public class Converter {
             e.printStackTrace();
         }
 
-        String csv = "\"ID\"," + joinStringArray((JSONArray) json.get("colHeaders")) + "\n";
+        String csv = "\"ID\"," + Converter.<String>joinArray((JSONArray) json.get("colHeaders")) + "\n";
 
         JSONArray headers = (JSONArray) json.get("rowHeaders");
         JSONArray data = (JSONArray) json.get("data");
@@ -85,41 +95,64 @@ public class Converter {
         for (int i = 0, il = headers.size(); i < il; i++) {
             csv += (
                 "\""+ (String) headers.get(i) + "\"," +
-                joinLongArray((JSONArray) data.get(i)) + "\n"
+                Converter.<Long>joinArray((JSONArray) data.get(i)) + "\n"
             );
         }
 
         return csv;
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> String joinArray(JSONArray array) {
+        String out = "";
+        for (int i = 0, il = array.size(); i < il; i++) {
+            out += "\"" + ((T) array.get(i)) + "\"";
+            if (i < il - 1) {
+                out += ",";
+            }
+        }
+        return out;
+    }
+
     public static boolean jsonStringsAreEqual(String a, String b) {
         try {
-            JSONObject jsonA = (JSONObject) new JSONParser().parse(a);
-            JSONObject jsonB = (JSONObject) new JSONParser().parse(b);
-            return jsonA.toString().equals(jsonB);
+            return jsonEqaul(new JSONParser().parse(a), new JSONParser().parse(b));
         } catch (Exception ex) {
+            ex.printStackTrace();
             return false;
         }
     }
-
-    private static <T> String joinLongArray(JSONArray array) {
-        String out = "";
-        for (int i = 0, il = array.size(); i < il; i++) {
-            out += "\"" + ((Long) array.get(i)) + "\"";
-            if (i < il - 1) {
-                out += ",";
-            }
+    public static boolean jsonEqaul(Object a, Object b) {
+        if (a instanceof JSONObject && b instanceof JSONObject) {
+            return jsonObjectEqaul((JSONObject) a, (JSONObject) b);
+        } else if (a instanceof JSONArray && b instanceof JSONArray) {
+            return jsonArrayEqaul((JSONArray) a, (JSONArray) b);
+        } else {
+            return a.equals(b);
         }
-        return out;
     }
-    private static <T> String joinStringArray(JSONArray array) {
-        String out = "";
-        for (int i = 0, il = array.size(); i < il; i++) {
-            out += "\"" + ((String) array.get(i)) + "\"";
-            if (i < il - 1) {
-                out += ",";
+    public static boolean jsonObjectEqaul(JSONObject a, JSONObject b) {
+        for (Object k : a.keySet()) {
+            String key = (String) k;
+
+            if (!b.containsKey(key) || !jsonEqaul(a.get(key), b.get(key))) {
+                return false;
             }
         }
-        return out;
+        return true;
+    }
+    public static boolean jsonArrayEqaul(JSONArray a, JSONArray b) {
+        int aSize = a.size();
+
+        if (aSize != b.size()) {
+            return false;
+        } else {
+            for (int i = 0, il = aSize; i < il; i++) {
+                if (!jsonEqaul(a.get(i), b.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

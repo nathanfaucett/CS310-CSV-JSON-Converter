@@ -9,6 +9,7 @@ buildscript {
 plugins {
   id 'org.roboscratch.robot' version '0.1.1'
 }
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 
@@ -20,6 +21,7 @@ jar {
                    'Main-Class': 'edu.jsu.mcis.Main'
     }
 }
+mainClassName = "edu.jsu.mcis.Main"
 
 test {
   testLogging {
