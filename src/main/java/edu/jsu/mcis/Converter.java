@@ -39,7 +39,32 @@ public class Converter {
 
     @SuppressWarnings("unchecked")
     public static String csvToJson(String csvString) {
-        return "";
+        try {
+            JSONObject json = new JSONObject();
+
+            JSONArray colHeaders = JSONArray();
+            colHeaders.add("Total","Assignment 1","Assignment 2","Exam 1");
+            json.set("colHeaders", colHeaders);
+
+            JSONArray rowHeaders = JSONArray();
+            json.set("rowHeaders", rowHeaders);
+
+            JSONArray data = JSONArray();
+            json.set("data", data);
+
+            CSVParser parser = CSVParser.parse(csvString);
+            for (CSVRecord record : parser) {
+                rowHeaders.add(record.get(0));
+                data.add(record.get(1));
+                data.add(record.get(2));
+                data.add(record.get(3));
+                data.add(record.get(4));
+            }
+
+            return json.toString();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public static String jsonToCsv(String jsonString) {
@@ -48,32 +73,53 @@ public class Converter {
         try {
             JSONParser parser = new JSONParser();
             json = (JSONObject) parser.parse(jsonString);
-        } catch (Exception ex) {
-            return "";
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        String csv = jsonArrayJoin((JSONArray) json.get("colHeaders"), ",") + "\n";
+        String csv = "\"ID\"," + joinStringArray((JSONArray) json.get("colHeaders")) + "\n";
 
         JSONArray headers = (JSONArray) json.get("rowHeaders");
         JSONArray data = (JSONArray) json.get("data");
 
         for (int i = 0, il = headers.size(); i < il; i++) {
-            csv += (String) headers.get(i) + "," + jsonArrayJoin((JSONArray) data.get(i), ",") + "\n";
+            csv += (
+                "\""+ (String) headers.get(i) + "\"," +
+                joinLongArray((JSONArray) data.get(i)) + "\n"
+            );
         }
 
         return csv;
     }
 
-    private static String jsonArrayJoin(JSONArray array, String str) {
-        String out = "";
+    public static boolean jsonStringsAreEqual(String a, String b) {
+        try {
+            JSONObject jsonA = (JSONObject) new JSONParser().parse(a);
+            JSONObject jsonB = (JSONObject) new JSONParser().parse(b);
+            return jsonA.toString().equals(jsonB);
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 
+    private static <T> String joinLongArray(JSONArray array) {
+        String out = "";
         for (int i = 0, il = array.size(); i < il; i++) {
-            out += (String) array.get(i);
+            out += "\"" + ((Long) array.get(i)) + "\"";
             if (i < il - 1) {
-                out += str;
+                out += ",";
             }
         }
-
+        return out;
+    }
+    private static <T> String joinStringArray(JSONArray array) {
+        String out = "";
+        for (int i = 0, il = array.size(); i < il; i++) {
+            out += "\"" + ((String) array.get(i)) + "\"";
+            if (i < il - 1) {
+                out += ",";
+            }
+        }
         return out;
     }
 }

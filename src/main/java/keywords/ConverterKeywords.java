@@ -4,16 +4,16 @@ import edu.jsu.mcis.*;
 import org.json.simple.parser.*;
 
 public class ConverterKeywords {
-    
+
     public String convertToJson(String csv) {
-        return "";
+        return Converter.csvToJson(csv);
     }
-    
+
     public String convertToCsv(String json) {
-        return "";
+        return Converter.jsonToCsv(json);
     }
-    
+
     public boolean jsonStringsAreEqual(String s, String t) {
-        return false;
+        return Converter.jsonStringsAreEqual(s, t);
     }
 }

@@ -39,7 +39,7 @@ public class ConverterTest {
 
     @Test
     public void testConvertCSVtoJSON() {
-        assertEquals(Converter.csvToJson(csvString), jsonString);
+        assertTrue(Converter.jsonStringsAreEqual(Converter.csvToJson(csvString), jsonString));
     }
 
     @Test
